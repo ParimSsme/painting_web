@@ -274,60 +274,6 @@ class _DrawingScreenState extends State<DrawingScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomToolbar(),
-    );
-  }
-
-  Widget _buildBottomToolbar() {
-    return Container(
-      color: Colors.blueAccent,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Tool Selector
-          Row(
-            children: [
-
-            ],
-          ),
-          // Color Picker
-          Row(
-            children: [
-              _buildColorCircle(Colors.black),
-              _buildColorCircle(Colors.red),
-              _buildColorCircle(Colors.green),
-              _buildColorCircle(Colors.blue),
-              _buildColorCircle(Colors.yellow),
-            ],
-          ),
-          // Stroke Width Selector
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    strokeWidth = strokeWidth > 1 ? strokeWidth - 1 : 1;
-                  });
-                },
-                icon: const Icon(Icons.remove, color: Colors.white),
-              ),
-              Text(
-                strokeWidth.toInt().toString(),
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-              ),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    strokeWidth++;
-                  });
-                },
-                icon: const Icon(Icons.add, color: Colors.white),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
