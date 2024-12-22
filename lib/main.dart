@@ -96,7 +96,7 @@ class PaintingApp extends StatelessWidget {
   }
 }
 
-enum Tool { brush, pencil, fill }
+enum Tool { brush, pencil, fill, eraser }
 
 class DrawingScreen extends StatefulWidget {
   const DrawingScreen({Key? key}) : super(key: key);
@@ -138,7 +138,9 @@ class _DrawingScreenState extends State<DrawingScreen> {
           DrawingPoint(
             position: position,
             paint: Paint()
-              ..color = selectedColor
+               ..color = selectedTool == Tool.eraser
+                  ? backgroundColor // Use background color for eraser
+                  : selectedColor
               ..isAntiAlias = true
               ..strokeWidth = strokeWidth
               ..strokeCap = StrokeCap.round,
@@ -245,11 +247,11 @@ class _DrawingScreenState extends State<DrawingScreen> {
                           children: [
                             _buildToolButton(Tool.pencil, 'pen'),
                             _buildToolButton(Tool.brush, 'pen_fancy'),
-                            // _buildToolButton(Tool.fill, Icons.format_color_fill),
                           ],
                         ),
                         Row(
                           children: [
+                            _buildToolButton(Tool.eraser, 'eraser'),
                             _buildToolButton(Tool.fill, 'fill'),
                           ],
                         ),
