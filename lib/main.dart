@@ -78,7 +78,6 @@ class RPSCustomPainter extends CustomPainter {
   }
 }
 
-
 void main() {
   runApp(const PaintingApp());
 }
@@ -95,7 +94,7 @@ class PaintingApp extends StatelessWidget {
   }
 }
 
-enum Tool { brush, pencil, fill, eraser,  text, spray }
+enum Tool { brush, pencil, fill, eraser, text, spray }
 
 class DrawingScreen extends StatefulWidget {
   const DrawingScreen({Key? key}) : super(key: key);
@@ -105,7 +104,7 @@ class DrawingScreen extends StatefulWidget {
 }
 
 class _DrawingScreenState extends State<DrawingScreen> {
-  List<DrawingElement?> points = [];
+  List<DrawingElement?> elements = [];
   Color selectedColor = Colors.black;
   double strokeWidth = 4.0;
   Tool selectedTool = Tool.brush;
@@ -118,55 +117,49 @@ class _DrawingScreenState extends State<DrawingScreen> {
   }
 
   void _handlePanStart(Offset position) {
-    setState(() {
-      if (selectedTool == Tool.fill) {
+    if (selectedTool == Tool.fill) {
+      setState(() {
         backgroundColor = selectedColor; // Fill the canvas with selected color
-      } else if (selectedTool == Tool.spray) {
-        _addSpray(position);
-      } else {
-        points.add(
-          DrawingElement(
-            position: position,
-            paint: Paint()
-              ..color = selectedColor
-              ..isAntiAlias = true
-              ..strokeWidth = strokeWidth
-              ..strokeCap = StrokeCap.round,
-            type: Tool.pencil,
-          ),
-        );
-      }
-    });
+      });
+    } else if (selectedTool == Tool.spray) {
+      _addSpray(position);
+    } else {
+      _addDrawingPoint(position);
+    }
   }
 
   void _handlePanUpdate(Offset position) {
     if (selectedTool == Tool.spray) {
       _addSpray(position);
     } else if (selectedTool != Tool.fill) {
-      setState(() {
-        points.add(
-          DrawingElement(
-            position: position,
-            paint: Paint()
-               ..color = selectedTool == Tool.eraser
-                  ? backgroundColor // Use background color for eraser
-                  : selectedColor
-              ..isAntiAlias = true
-              ..strokeWidth = strokeWidth
-              ..strokeCap = StrokeCap.round,
-            type: Tool.fill,
-          ),
-        );
-      });
+      _addDrawingPoint(position);
     }
   }
 
   void _handlePanEnd() {
     if (selectedTool != Tool.spray) {
       setState(() {
-        points.add(null); // Add null to separate strokes
+        elements.add(null); // Add null to separate strokes
       });
     }
+  }
+
+  void _addDrawingPoint(Offset position) {
+    setState(() {
+      elements.add(
+        DrawingElement(
+          position: position,
+          paint: Paint()
+            ..color = selectedTool == Tool.eraser
+                ? backgroundColor // Use background color for eraser
+                : selectedColor
+            ..isAntiAlias = true
+            ..strokeWidth =  selectedTool == Tool.eraser ? 6 : strokeWidth
+            ..strokeCap = StrokeCap.round,
+          type: ElementType.line,
+        ),
+      );
+    });
   }
 
   void _addSpray(Offset position) {
@@ -182,7 +175,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
           position.dx + cos(angle) * distance,
           position.dy + sin(angle) * distance,
         );
-        points.add(
+        elements.add(
           DrawingElement(
             position: offset,
             paint: Paint()
@@ -190,7 +183,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
               ..isAntiAlias = true
               ..strokeWidth = 2.0
               ..strokeCap = StrokeCap.round,
-            type: Tool.pencil,
+            type: ElementType.line,
           ),
         );
       }
@@ -212,12 +205,12 @@ class _DrawingScreenState extends State<DrawingScreen> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  points.add(
+                  elements.add(
                     DrawingElement(
                       position: position,
                       text: textController.text,
                       color: selectedColor,
-                      type: Tool.text,
+                      type: ElementType.text,
                     ),
                   );
                 });
@@ -236,14 +229,14 @@ class _DrawingScreenState extends State<DrawingScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Painting App'),
+        title: const Text('Advanced Drawing App'),
         backgroundColor: Colors.blueAccent,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
               setState(() {
-                points.clear();
+                elements.clear();
                 backgroundColor = Colors.white;
               });
             },
@@ -345,12 +338,15 @@ class _DrawingScreenState extends State<DrawingScreen> {
           ),
           Expanded(
             child: GestureDetector(
+              onTapDown: (details) => _handleTap(details.localPosition),
               onPanStart: (details) => _handlePanStart(details.localPosition),
               onPanUpdate: (details) => _handlePanUpdate(details.localPosition),
               onPanEnd: (details) => _handlePanEnd(),
               child: CustomPaint(
                 painter: DrawingPainter(
-                    points: points, backgroundColor: backgroundColor),
+                  elements: elements,
+                  backgroundColor: backgroundColor,
+                ),
                 size: Size.infinite,
               ),
             ),
@@ -371,9 +367,9 @@ class _DrawingScreenState extends State<DrawingScreen> {
         });
       },
       style: ElevatedButton.styleFrom(
-          shape: CircleBorder(),
-          padding: EdgeInsets.all(10),
-          backgroundColor: selectedTool == tool ? Colors.white : Colors.white70,),
+        shape: CircleBorder(),
+        padding: EdgeInsets.all(10),
+        backgroundColor: selectedTool == tool ? Colors.white : Colors.white70,),
       child: SvgPicture.asset('assets/$icon.svg'),
     );
   }
@@ -401,12 +397,14 @@ class _DrawingScreenState extends State<DrawingScreen> {
   }
 }
 
+enum ElementType { line, text }
+
 class DrawingElement {
   final Offset position;
   final Paint? paint;
   final String? text;
   final Color? color;
-  final Tool type;
+  final ElementType type;
 
   DrawingElement({
     required this.position,
@@ -418,26 +416,34 @@ class DrawingElement {
 }
 
 class DrawingPainter extends CustomPainter {
-  final List<DrawingElement?> points;
+  final List<DrawingElement?> elements;
   final Color backgroundColor;
 
-  DrawingPainter({required this.points, required this.backgroundColor});
+  DrawingPainter({required this.elements, required this.backgroundColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final backgroundPaint = Paint()..color = backgroundColor;
     canvas.drawRect(Offset.zero & size, backgroundPaint);
 
-    for (int i = 0; i < points.length - 1; i++) {
+    for (final element in elements) {
+      if (element == null) continue;
 
-      if (points[i] == null) continue;
-
-      if (points[i] != null && points[i + 1] != null) {
-        canvas.drawLine(
-            points[i]!.position, points[i + 1]!.position, points[i]!.paint!);
-      } else if (points[i] != null && points[i + 1] == null) {
-        canvas.drawCircle(points[i]!.position, (points[i]!.paint?.strokeWidth ?? 4) / 2,
-            points[i]!.paint!);
+      if (element.type == ElementType.line && element.paint != null) {
+        canvas.drawCircle(
+          element.position,
+          element.paint!.strokeWidth / 2,
+          element.paint!,
+        );
+      } else if (element.type == ElementType.text && element.text != null) {
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: element.text,
+            style: TextStyle(color: element.color, fontSize: 24),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        textPainter.paint(canvas, element.position);
       }
     }
   }
@@ -447,3 +453,4 @@ class DrawingPainter extends CustomPainter {
     return true;
   }
 }
+
