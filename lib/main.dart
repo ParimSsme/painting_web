@@ -9,68 +9,42 @@ class RPSCustomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Path path_0 = Path();
-    path_0.moveTo(size.width * 0.9909618, size.height * 0.01844159);
-    path_0.cubicTo(size.width * 0.9909618, size.height * 0.008256599,
-        size.width * 1.081350, 0, size.width * 1.192850, 0);
+    path_0.moveTo(size.width * 0.9900000, size.height * 0.9968487);
     path_0.cubicTo(
-        size.width * 1.304349,
-        0,
-        size.width * 1.394737,
-        size.height * 0.008256599,
-        size.width * 1.394737,
-        size.height * 0.01844159);
-    path_0.lineTo(size.width * 1.394737, size.height * 0.9959820);
+        size.width * 0.9900000,
+        size.height * 0.9674370,
+        size.width * 0.8942857,
+        size.height * 0.9397059,
+        size.width * 0.7314286,
+        size.height * 0.9222689);
+    path_0.lineTo(size.width * 0.2871429, size.height * 0.8743697);
     path_0.cubicTo(
-        size.width * 1.394737,
-        size.height * 1.006166,
-        size.width * 1.304349,
-        size.height * 1.014423,
-        size.width * 1.192850,
-        size.height * 1.014423);
+        size.width * 0.1242857,
+        size.height * 0.8571429,
+        size.width * 0.02857143,
+        size.height * 0.8292017,
+        size.width * 0.02857143,
+        size.height * 0.7997899);
+    path_0.lineTo(size.width * 0.02857143, size.height * 0.1941176);
     path_0.cubicTo(
-        size.width * 1.081350,
-        size.height * 1.014423,
-        size.width * 0.9909618,
-        size.height * 1.006166,
-        size.width * 0.9909618,
-        size.height * 0.9959820);
-    path_0.lineTo(size.width * 0.9909618, size.height * 0.6239507);
+        size.width * 0.02857143,
+        size.height * 0.1647059,
+        size.width * 0.1242857,
+        size.height * 0.1369748,
+        size.width * 0.2871429,
+        size.height * 0.1195378);
+    path_0.lineTo(size.width * 0.7685714, size.height * 0.06785714);
     path_0.cubicTo(
-        size.width * 0.9909618,
-        size.height * 0.6072188,
-        size.width * 0.9042803,
-        size.height * 0.5914748,
-        size.width * 0.7572368,
-        size.height * 0.5814976);
-    path_0.lineTo(size.width * 0.3389882, size.height * 0.5531178);
-    path_0.cubicTo(
-        size.width * 0.1919447,
-        size.height * 0.5431406,
-        size.width * 0.1052632,
-        size.height * 0.5273966,
-        size.width * 0.1052632,
-        size.height * 0.5106647);
-    path_0.lineTo(size.width * 0.1052632, size.height * 0.1564026);
-    path_0.cubicTo(
-        size.width * 0.1052632,
-        size.height * 0.1396707,
-        size.width * 0.1919447,
-        size.height * 0.1239267,
-        size.width * 0.3389882,
-        size.height * 0.1139490);
-    path_0.lineTo(size.width * 0.7859632, size.height * 0.08362103);
-    path_0.cubicTo(
-        size.width * 0.9149342,
-        size.height * 0.07487019,
-        size.width * 0.9909618,
-        size.height * 0.06106034,
-        size.width * 0.9909618,
-        size.height * 0.04638486);
-    path_0.lineTo(size.width * 0.9909618, size.height * 0.01844159);
+        size.width * 0.9085714,
+        size.height * 0.05294118,
+        size.width * 0.9900000,
+        size.height * 0.02899160,
+        size.width * 0.9900000,
+        size.height * 0.003781513);
     path_0.close();
 
     Paint paint_0_fill = Paint()..style = PaintingStyle.fill;
-    paint_0_fill.color = Color(0xff383A57);
+    paint_0_fill.color = Color(0xff60657d).withOpacity(1.0);
     canvas.drawPath(path_0, paint_0_fill);
   }
 
@@ -85,7 +59,7 @@ void main() {
 }
 
 class PaintingApp extends StatelessWidget {
-  const PaintingApp({Key? key}) : super(key: key);
+  const PaintingApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +176,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
           _addShape(startPosition!, position, selectedTool);
         }
       });
-    }  else if (_isBrushTool(selectedTool)) {
+    } else if (_isBrushTool(selectedTool)) {
       setState(() {
         if (selectedTool == Tool.dottedBrush) {
           _addDottedBrush(position);
@@ -217,7 +191,9 @@ class _DrawingScreenState extends State<DrawingScreen> {
           );
         }
       });
-    } else if (selectedTool == Tool.brush || selectedTool == Tool.pencil || selectedTool == Tool.eraser) {
+    } else if (selectedTool == Tool.brush ||
+        selectedTool == Tool.pencil ||
+        selectedTool == Tool.eraser) {
       _addDrawingPoint(position);
     }
   }
@@ -254,7 +230,6 @@ class _DrawingScreenState extends State<DrawingScreen> {
       Tool.gradientBrush,
     ].contains(tool);
   }
-
 
   Paint _createPaint(Tool tool) {
     switch (tool) {
@@ -349,7 +324,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
               ? backgroundColor // Use background color for eraser
               : selectedColor
           ..isAntiAlias = true
-          ..strokeWidth =  selectedTool == Tool.eraser ? 6 : strokeWidth
+          ..strokeWidth = selectedTool == Tool.eraser ? 6 : strokeWidth
           ..strokeCap = StrokeCap.round,
       ));
     });
@@ -410,15 +385,16 @@ class _DrawingScreenState extends State<DrawingScreen> {
       ),
       body: Row(
         children: [
-          SizedBox(
+          Container(
+            decoration: BoxDecoration(color: Color(0xff9295c5)),
             width: 200,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(color: Color(0xff9295c5)),
+                SizedBox(
+                  width: 70,
+                  height: 450,
                   child: CustomPaint(
-                    size: Size(70, double.infinity),
                     painter: RPSCustomPainter(),
                     child: Padding(
                       padding: const EdgeInsets.only(top: 110.0, left: 5),
@@ -494,7 +470,6 @@ class _DrawingScreenState extends State<DrawingScreen> {
                             _buildToolButton(Tool.spray, 'spray'),
                           ],
                         ),
-
                         Text('Brushes'),
                         Row(
                           children: [
@@ -514,7 +489,6 @@ class _DrawingScreenState extends State<DrawingScreen> {
                             _buildToolButton(Tool.gradientBrush, 'brush'),
                           ],
                         ),
-
                         Text('Shapes'),
                         Divider(),
                         Row(
@@ -575,7 +549,8 @@ class _DrawingScreenState extends State<DrawingScreen> {
       style: ElevatedButton.styleFrom(
         shape: CircleBorder(),
         padding: EdgeInsets.all(10),
-        backgroundColor: selectedTool == tool ? Colors.white : Colors.white70,),
+        backgroundColor: selectedTool == tool ? Colors.white : Colors.white70,
+      ),
       child: SvgPicture.asset('assets/$icon.svg'),
     );
   }
@@ -603,7 +578,6 @@ class _DrawingScreenState extends State<DrawingScreen> {
   }
 }
 
-
 class DrawingElement {
   final Offset? start;
   final Offset? end;
@@ -623,7 +597,8 @@ class DrawingElement {
     this.tool,
   });
 
-  factory DrawingElement.line({required Offset position, required Paint paint}) {
+  factory DrawingElement.line(
+      {required Offset position, required Paint paint}) {
     return DrawingElement(position: position, paint: paint);
   }
 
@@ -655,7 +630,10 @@ class DrawingPainter extends CustomPainter {
   final List<DrawingElement> elements;
   final Color backgroundColor;
 
-  DrawingPainter({required this.elements, required this.backgroundColor,});
+  DrawingPainter({
+    required this.elements,
+    required this.backgroundColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -663,14 +641,14 @@ class DrawingPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, backgroundPaint);
 
     for (final element in elements) {
-
       if (element.tool == Tool.pencil && element.paint != null) {
         canvas.drawCircle(
           element.position!,
           element.paint!.strokeWidth / 2,
           element.paint!,
         );
-      }if (element.tool == Tool.dottedBrush) {
+      }
+      if (element.tool == Tool.dottedBrush) {
         _drawDottedBrush(canvas, element);
       } else if (element.tool == Tool.dashedBrush) {
         _drawDashedBrush(canvas, element);
@@ -688,15 +666,15 @@ class DrawingPainter extends CustomPainter {
           textDirection: TextDirection.ltr,
         )..layout();
         textPainter.paint(canvas, element.position!);
-      } else
-      if (element.position != null && element.paint != null) {
+      } else if (element.position != null && element.paint != null) {
         canvas.drawCircle(
           element.position!,
           element.paint!.strokeWidth / 2,
           element.paint!,
         );
       } else if (element.start != null && element.end != null) {
-        _drawShape(canvas, element.start!, element.end!, element.tool!, element.paint!);
+        _drawShape(canvas, element.start!, element.end!, element.tool!,
+            element.paint!);
       }
     }
   }
@@ -732,7 +710,8 @@ class DrawingPainter extends CustomPainter {
     }
   }
 
-  void _drawShape(Canvas canvas, Offset start, Offset end, Tool tool, Paint paint) {
+  void _drawShape(
+      Canvas canvas, Offset start, Offset end, Tool tool, Paint paint) {
     switch (tool) {
       case Tool.line:
         canvas.drawLine(start, end, paint);
@@ -794,5 +773,3 @@ class DrawingPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
-
-
