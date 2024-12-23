@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+import 'dart:ui' as ui;
+
 class RPSCustomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -107,6 +109,12 @@ enum Tool {
   arrow,
   triangle,
   square,
+  solidBrush,
+  dottedBrush,
+  dashedBrush,
+  blurredBrush,
+  neonBrush,
+  gradientBrush,
 }
 
 class DrawingScreen extends StatefulWidget {
@@ -194,6 +202,21 @@ class _DrawingScreenState extends State<DrawingScreen> {
           _addShape(startPosition!, position, selectedTool);
         }
       });
+    }  else if (_isBrushTool(selectedTool)) {
+      setState(() {
+        if (selectedTool == Tool.dottedBrush) {
+          _addDottedBrush(position);
+        } else if (selectedTool == Tool.dashedBrush) {
+          _addDashedBrush(position);
+        } else {
+          elements.add(
+            DrawingElement.line(
+              position: position,
+              paint: _createPaint(selectedTool),
+            ),
+          );
+        }
+      });
     } else if (selectedTool == Tool.brush || selectedTool == Tool.pencil || selectedTool == Tool.eraser) {
       _addDrawingPoint(position);
     }
@@ -219,6 +242,102 @@ class _DrawingScreenState extends State<DrawingScreen> {
       Tool.triangle,
       Tool.square,
     ].contains(tool);
+  }
+
+  bool _isBrushTool(Tool tool) {
+    return [
+      Tool.solidBrush,
+      Tool.dottedBrush,
+      Tool.dashedBrush,
+      Tool.blurredBrush,
+      Tool.neonBrush,
+      Tool.gradientBrush,
+    ].contains(tool);
+  }
+
+
+  Paint _createPaint(Tool tool) {
+    switch (tool) {
+      case Tool.solidBrush:
+        return Paint()
+          ..color = selectedColor
+          ..strokeWidth = strokeWidth
+          ..style = PaintingStyle.stroke
+          ..isAntiAlias = true
+          ..strokeCap = StrokeCap.round;
+
+      case Tool.blurredBrush:
+        return Paint()
+          ..color = selectedColor
+          ..strokeWidth = strokeWidth
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 4.0)
+          ..isAntiAlias = true;
+
+      case Tool.neonBrush:
+        return Paint()
+          ..color = selectedColor
+          ..strokeWidth = strokeWidth
+          ..maskFilter = MaskFilter.blur(BlurStyle.outer, 10)
+          ..isAntiAlias = true;
+
+      case Tool.gradientBrush:
+        return Paint()
+          ..shader = ui.Gradient.linear(
+            Offset(0, 0),
+            Offset(200, 200),
+            [selectedColor, selectedColor.withOpacity(0)],
+          )
+          ..strokeWidth = strokeWidth
+          ..style = PaintingStyle.stroke
+          ..isAntiAlias = true;
+
+      default:
+        return Paint()
+          ..color = selectedColor
+          ..strokeWidth = strokeWidth
+          ..isAntiAlias = true
+          ..strokeCap = StrokeCap.round;
+    }
+  }
+
+  void _addDottedBrush(Offset position) {
+    elements.add(
+      DrawingElement.line(
+        position: position,
+        paint: Paint()
+          ..color = selectedColor
+          ..strokeWidth = strokeWidth
+          ..style = PaintingStyle.fill,
+      ),
+    );
+  }
+
+  void _addDashedBrush(Offset position) {
+    if (elements.isNotEmpty && elements.last.tool == selectedTool) {
+      final lastPoint = elements.last.position!;
+      final distance = (position - lastPoint).distance;
+      if (distance > 10) {
+        elements.add(
+          DrawingElement.line(
+            position: position,
+            paint: Paint()
+              ..color = selectedColor
+              ..strokeWidth = strokeWidth
+              ..style = PaintingStyle.stroke,
+          ),
+        );
+      }
+    } else {
+      elements.add(
+        DrawingElement.line(
+          position: position,
+          paint: Paint()
+            ..color = selectedColor
+            ..strokeWidth = strokeWidth
+            ..style = PaintingStyle.stroke,
+        ),
+      );
+    }
   }
 
   void _addDrawingPoint(Offset position) {
@@ -373,6 +492,26 @@ class _DrawingScreenState extends State<DrawingScreen> {
                           children: [
                             _buildToolButton(Tool.text, 'font'),
                             _buildToolButton(Tool.spray, 'spray'),
+                          ],
+                        ),
+
+                        Text('Brushes'),
+                        Row(
+                          children: [
+                            _buildToolButton(Tool.solidBrush, 'brush'),
+                            _buildToolButton(Tool.dottedBrush, 'brush'),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            _buildToolButton(Tool.dashedBrush, 'brush'),
+                            _buildToolButton(Tool.blurredBrush, 'brush'),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            _buildToolButton(Tool.neonBrush, 'brush'),
+                            _buildToolButton(Tool.gradientBrush, 'brush'),
                           ],
                         ),
 
@@ -531,6 +670,15 @@ class DrawingPainter extends CustomPainter {
           element.paint!.strokeWidth / 2,
           element.paint!,
         );
+      }if (element.tool == Tool.dottedBrush) {
+        _drawDottedBrush(canvas, element);
+      } else if (element.tool == Tool.dashedBrush) {
+        _drawDashedBrush(canvas, element);
+      } else if (element.tool == Tool.solidBrush ||
+          element.tool == Tool.blurredBrush ||
+          element.tool == Tool.neonBrush ||
+          element.tool == Tool.gradientBrush) {
+        _drawSolidBrush(canvas, element);
       } else if (element.tool == Tool.text && element.text != null) {
         final textPainter = TextPainter(
           text: TextSpan(
@@ -550,6 +698,37 @@ class DrawingPainter extends CustomPainter {
       } else if (element.start != null && element.end != null) {
         _drawShape(canvas, element.start!, element.end!, element.tool!, element.paint!);
       }
+    }
+  }
+
+  void _drawSolidBrush(Canvas canvas, DrawingElement element) {
+    if (element.paint != null && element.position != null) {
+      canvas.drawCircle(
+        element.position!,
+        element.paint!.strokeWidth / 2,
+        element.paint!,
+      );
+    }
+  }
+
+  void _drawDottedBrush(Canvas canvas, DrawingElement element) {
+    if (element.paint != null && element.position != null) {
+      canvas.drawCircle(
+        element.position!,
+        element.paint!.strokeWidth / 2,
+        element.paint!,
+      );
+    }
+  }
+
+  void _drawDashedBrush(Canvas canvas, DrawingElement element) {
+    if (element.paint != null && element.position != null) {
+      // Draw individual dash as a circle
+      canvas.drawCircle(
+        element.position!,
+        element.paint!.strokeWidth / 2,
+        element.paint!,
+      );
     }
   }
 
