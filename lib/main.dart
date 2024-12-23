@@ -94,7 +94,20 @@ class PaintingApp extends StatelessWidget {
   }
 }
 
-enum Tool { brush, pencil, fill, eraser, text, spray }
+enum Tool {
+  brush,
+  pencil,
+  fill,
+  eraser,
+  text,
+  spray,
+  star,
+  circle,
+  line,
+  arrow,
+  triangle,
+  square,
+}
 
 class DrawingScreen extends StatefulWidget {
   const DrawingScreen({Key? key}) : super(key: key);
@@ -104,90 +117,21 @@ class DrawingScreen extends StatefulWidget {
 }
 
 class _DrawingScreenState extends State<DrawingScreen> {
-  List<DrawingElement?> elements = [];
+  List<DrawingElement> elements = [];
+  Offset? startPosition;
   Color selectedColor = Colors.black;
   double strokeWidth = 4.0;
   Tool selectedTool = Tool.brush;
   Color backgroundColor = Colors.white;
 
   void _handleTap(Offset position) {
-    if (selectedTool == Tool.text) {
-      _showTextInputDialog(position);
-    }
-  }
-
-  void _handlePanStart(Offset position) {
     if (selectedTool == Tool.fill) {
       setState(() {
         backgroundColor = selectedColor; // Fill the canvas with selected color
       });
-    } else if (selectedTool == Tool.spray) {
-      _addSpray(position);
-    } else {
-      _addDrawingPoint(position);
+    } else if (selectedTool == Tool.text) {
+      _showTextInputDialog(position);
     }
-  }
-
-  void _handlePanUpdate(Offset position) {
-    if (selectedTool == Tool.spray) {
-      _addSpray(position);
-    } else if (selectedTool != Tool.fill) {
-      _addDrawingPoint(position);
-    }
-  }
-
-  void _handlePanEnd() {
-    if (selectedTool != Tool.spray) {
-      setState(() {
-        elements.add(null); // Add null to separate strokes
-      });
-    }
-  }
-
-  void _addDrawingPoint(Offset position) {
-    setState(() {
-      elements.add(
-        DrawingElement(
-          position: position,
-          paint: Paint()
-            ..color = selectedTool == Tool.eraser
-                ? backgroundColor // Use background color for eraser
-                : selectedColor
-            ..isAntiAlias = true
-            ..strokeWidth =  selectedTool == Tool.eraser ? 6 : strokeWidth
-            ..strokeCap = StrokeCap.round,
-          type: ElementType.line,
-        ),
-      );
-    });
-  }
-
-  void _addSpray(Offset position) {
-    final random = Random();
-    const int sprayParticleCount = 30;
-    const double sprayRadius = 20.0;
-
-    setState(() {
-      for (int i = 0; i < sprayParticleCount; i++) {
-        final angle = random.nextDouble() * 2 * pi;
-        final distance = random.nextDouble() * sprayRadius;
-        final offset = Offset(
-          position.dx + cos(angle) * distance,
-          position.dy + sin(angle) * distance,
-        );
-        elements.add(
-          DrawingElement(
-            position: offset,
-            paint: Paint()
-              ..color = selectedColor
-              ..isAntiAlias = true
-              ..strokeWidth = 2.0
-              ..strokeCap = StrokeCap.round,
-            type: ElementType.line,
-          ),
-        );
-      }
-    });
   }
 
   void _showTextInputDialog(Offset position) {
@@ -210,7 +154,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
                       position: position,
                       text: textController.text,
                       color: selectedColor,
-                      type: ElementType.text,
+                      tool: Tool.text,
                     ),
                   );
                 });
@@ -224,12 +168,114 @@ class _DrawingScreenState extends State<DrawingScreen> {
     );
   }
 
+  void _handlePanStart(Offset position) {
+    if (selectedTool == Tool.fill) {
+      setState(() {
+        backgroundColor = selectedColor; // Fill the canvas with selected color
+      });
+    } else if (selectedTool == Tool.text || selectedTool == Tool.spray) {
+      // These tools don't require startPosition
+      return;
+    } else {
+      startPosition = position;
+    }
+  }
+
+  void _handlePanUpdate(Offset position) {
+    if (selectedTool == Tool.spray) {
+      _addSpray(position);
+    } else if (_isShapeTool(selectedTool)) {
+      setState(() {
+        if (startPosition != null) {
+          // Update last element for live preview of shapes
+          if (elements.isNotEmpty && elements.last.tool == selectedTool) {
+            elements.removeLast();
+          }
+          _addShape(startPosition!, position, selectedTool);
+        }
+      });
+    } else if (selectedTool == Tool.brush || selectedTool == Tool.pencil || selectedTool == Tool.eraser) {
+      _addDrawingPoint(position);
+    }
+  }
+
+  void _handlePanEnd() {
+    if (_isShapeTool(selectedTool)) {
+      // Finalize shape on pan end
+      startPosition = null;
+    } else if (selectedTool == Tool.brush) {
+      setState(() {
+        elements.add(DrawingElement.endOfStroke());
+      });
+    }
+  }
+
+  bool _isShapeTool(Tool tool) {
+    return [
+      Tool.star,
+      Tool.circle,
+      Tool.line,
+      Tool.arrow,
+      Tool.triangle,
+      Tool.square,
+    ].contains(tool);
+  }
+
+  void _addDrawingPoint(Offset position) {
+    setState(() {
+      elements.add(DrawingElement.line(
+        position: position,
+        paint: Paint()
+          ..color = selectedTool == Tool.eraser
+              ? backgroundColor // Use background color for eraser
+              : selectedColor
+          ..isAntiAlias = true
+          ..strokeWidth =  selectedTool == Tool.eraser ? 6 : strokeWidth
+          ..strokeCap = StrokeCap.round,
+      ));
+    });
+  }
+
+  void _addSpray(Offset position) {
+    final random = Random();
+    const int sprayParticleCount = 30;
+    const double sprayRadius = 20.0;
+
+    setState(() {
+      for (int i = 0; i < sprayParticleCount; i++) {
+        final angle = random.nextDouble() * 2 * pi;
+        final distance = random.nextDouble() * sprayRadius;
+        final offset = Offset(
+          position.dx + cos(angle) * distance,
+          position.dy + sin(angle) * distance,
+        );
+        elements.add(DrawingElement.line(
+          position: offset,
+          paint: Paint()
+            ..color = selectedColor
+            ..strokeWidth = 2.0
+            ..isAntiAlias = true,
+        ));
+      }
+    });
+  }
+
+  void _addShape(Offset start, Offset end, Tool shape) {
+    elements.add(DrawingElement.shape(
+      start: start,
+      end: end,
+      tool: shape,
+      color: selectedColor,
+      strokeWidth: strokeWidth,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Advanced Drawing App'),
+        title: const Text('Drawing App'),
         backgroundColor: Colors.blueAccent,
         actions: [
           IconButton(
@@ -397,29 +443,59 @@ class _DrawingScreenState extends State<DrawingScreen> {
   }
 }
 
-enum ElementType { line, text }
 
 class DrawingElement {
-  final Offset position;
-  final Paint? paint;
+  final Offset? start;
+  final Offset? end;
+  final Offset? position;
   final String? text;
   final Color? color;
-  final ElementType type;
+  final Paint? paint;
+  final Tool? tool;
 
   DrawingElement({
-    required this.position,
-    this.paint,
+    this.start,
+    this.end,
+    this.position,
     this.text,
     this.color,
-    required this.type,
+    this.paint,
+    this.tool,
   });
+
+  factory DrawingElement.line({required Offset position, required Paint paint}) {
+    return DrawingElement(position: position, paint: paint);
+  }
+
+  factory DrawingElement.shape({
+    required Offset start,
+    required Offset end,
+    required Tool tool,
+    required Color color,
+    required double strokeWidth,
+  }) {
+    return DrawingElement(
+      start: start,
+      end: end,
+      tool: tool,
+      paint: Paint()
+        ..color = color
+        ..strokeWidth = strokeWidth
+        ..style = PaintingStyle.stroke
+        ..isAntiAlias = true,
+    );
+  }
+
+  factory DrawingElement.endOfStroke() {
+    return DrawingElement();
+  }
 }
 
 class DrawingPainter extends CustomPainter {
-  final List<DrawingElement?> elements;
+  final List<DrawingElement> elements;
   final Color backgroundColor;
 
-  DrawingPainter({required this.elements, required this.backgroundColor});
+  DrawingPainter({required this.elements, required this.backgroundColor,});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -427,15 +503,14 @@ class DrawingPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, backgroundPaint);
 
     for (final element in elements) {
-      if (element == null) continue;
 
-      if (element.type == ElementType.line && element.paint != null) {
+      if (element.tool == Tool.pencil && element.paint != null) {
         canvas.drawCircle(
-          element.position,
+          element.position!,
           element.paint!.strokeWidth / 2,
           element.paint!,
         );
-      } else if (element.type == ElementType.text && element.text != null) {
+      } else if (element.tool == Tool.text && element.text != null) {
         final textPainter = TextPainter(
           text: TextSpan(
             text: element.text,
@@ -443,14 +518,81 @@ class DrawingPainter extends CustomPainter {
           ),
           textDirection: TextDirection.ltr,
         )..layout();
-        textPainter.paint(canvas, element.position);
+        textPainter.paint(canvas, element.position!);
+      } else
+      if (element.position != null && element.paint != null) {
+        canvas.drawCircle(
+          element.position!,
+          element.paint!.strokeWidth / 2,
+          element.paint!,
+        );
+      } else if (element.start != null && element.end != null) {
+        _drawShape(canvas, element.start!, element.end!, element.tool!, element.paint!);
       }
     }
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  void _drawShape(Canvas canvas, Offset start, Offset end, Tool tool, Paint paint) {
+    switch (tool) {
+      case Tool.line:
+        canvas.drawLine(start, end, paint);
+        break;
+      case Tool.circle:
+        final rect = Rect.fromPoints(start, end);
+        canvas.drawOval(rect, paint);
+        break;
+      case Tool.square:
+        final rect = Rect.fromPoints(start, end);
+        canvas.drawRect(rect, paint);
+        break;
+      case Tool.triangle:
+        final path = Path()
+          ..moveTo((start.dx + end.dx) / 2, start.dy)
+          ..lineTo(start.dx, end.dy)
+          ..lineTo(end.dx, end.dy)
+          ..close();
+        canvas.drawPath(path, paint);
+        break;
+      case Tool.arrow:
+        canvas.drawLine(start, end, paint);
+        final angle = atan2(end.dy - start.dy, end.dx - start.dx);
+        final arrowLength = 10.0;
+        final arrow1 = Offset(
+          end.dx - arrowLength * cos(angle - pi / 6),
+          end.dy - arrowLength * sin(angle - pi / 6),
+        );
+        final arrow2 = Offset(
+          end.dx - arrowLength * cos(angle + pi / 6),
+          end.dy - arrowLength * sin(angle + pi / 6),
+        );
+        canvas.drawLine(end, arrow1, paint);
+        canvas.drawLine(end, arrow2, paint);
+        break;
+      case Tool.star:
+        final center = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+        final radius = (end - start).distance / 2;
+        final path = Path();
+        for (int i = 0; i < 10; i++) {
+          final angle = i * pi / 5;
+          final r = i.isEven ? radius : radius / 2;
+          final x = center.dx + r * cos(angle);
+          final y = center.dy + r * sin(angle);
+          if (i == 0) {
+            path.moveTo(x, y);
+          } else {
+            path.lineTo(x, y);
+          }
+        }
+        path.close();
+        canvas.drawPath(path, paint);
+        break;
+      default:
+        break;
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
 
