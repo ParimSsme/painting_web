@@ -44,7 +44,7 @@ class RPSCustomPainter extends CustomPainter {
     path_0.close();
 
     Paint paint_0_fill = Paint()..style = PaintingStyle.fill;
-    paint_0_fill.color = Color(0xff60657d).withOpacity(1.0);
+    paint_0_fill.color = Color(0xff2c2f48);
     canvas.drawPath(path_0, paint_0_fill);
   }
 
@@ -99,6 +99,12 @@ class DrawingScreen extends StatefulWidget {
 }
 
 class _DrawingScreenState extends State<DrawingScreen> {
+
+  final titleStyle = TextStyle(
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+  );
   List<DrawingElement> elements = [];
   Offset? startPosition;
   Color selectedColor = Colors.black;
@@ -385,72 +391,78 @@ class _DrawingScreenState extends State<DrawingScreen> {
       ),
       body: Row(
         children: [
-          Container(
-            decoration: BoxDecoration(color: Color(0xff9295c5)),
+          SizedBox(
             width: 200,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  width: 70,
-                  height: 450,
-                  child: CustomPaint(
-                    painter: RPSCustomPainter(),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 110.0, left: 5),
-                      child: Column(
-                        spacing: 15,
-                        children: [
-                          _buildColorCircle(Color(0xff61c554)),
-                          _buildColorCircle(Color(0xffed695e)),
-                          _buildColorCircle(Color(0xfff4bf4f)),
-                          _buildColorCircle(Color(0xff4d8bb7)),
-                          ElevatedButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text('Select Color'),
-                                  content: SingleChildScrollView(
-                                    child: Column(
-                                      children: Colors.primaries.map((color) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              selectedColor = color;
-                                            });
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Container(
-                                            width: double.infinity,
-                                            height: 50,
-                                            color: color,
-                                          ),
-                                        );
-                                      }).toList(),
+                Container(
+                  decoration: BoxDecoration(color: Colors.deepPurple.shade200),
+                  alignment: Alignment.topLeft,
+                  child: SizedBox(
+                    width: 70,
+                    height: 450,
+                    child: CustomPaint(
+                      painter: RPSCustomPainter(),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 90.0, bottom: 90),
+                        child: Column(
+                          spacing: 15,
+                          children: [
+                            _buildColorCircle(Color(0xff61c554)),
+                            _buildColorCircle(Color(0xffed695e)),
+                            _buildColorCircle(Color(0xfff4bf4f)),
+                            _buildColorCircle(Color(0xff4d8bb7)),
+                            ElevatedButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: Text('Select Color'),
+                                    content: SingleChildScrollView(
+                                      child: Column(
+                                        children: Colors.primaries.map((color) {
+                                          return GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                selectedColor = color;
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Container(
+                                              width: double.infinity,
+                                              height: 50,
+                                              color: color,
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                                shape: CircleBorder(),
-                                padding: EdgeInsets.all(10),
-                                backgroundColor: Color(0x33000000)),
-                            child: const Icon(Icons.add, color: Colors.white),
-                          )
-                        ],
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  shape: CircleBorder(),
+                                  padding: EdgeInsets.all(10),
+                                  backgroundColor: Color(0x33000000)),
+                              child: const Icon(Icons.add, color: Colors.white),
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
                 Expanded(
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: Color(0xff9295c5)),
+                    decoration: BoxDecoration(color: Color(0xe62c2f48)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Tools'),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15, left: 5),
+                          child: Text('Tools', style: titleStyle,),
+                        ),
                         Divider(),
                         Row(
                           children: [
@@ -470,7 +482,10 @@ class _DrawingScreenState extends State<DrawingScreen> {
                             _buildToolButton(Tool.spray, 'spray'),
                           ],
                         ),
-                        Text('Brushes'),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15, left: 5),
+                          child: Text('Brushes', style: titleStyle,),
+                        ),
                         Row(
                           children: [
                             _buildToolButton(Tool.solidBrush, 'brush'),
@@ -489,7 +504,10 @@ class _DrawingScreenState extends State<DrawingScreen> {
                             _buildToolButton(Tool.gradientBrush, 'brush'),
                           ],
                         ),
-                        Text('Shapes'),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15, left: 5),
+                          child: Text('Shapes', style: titleStyle,),
+                        ),
                         Divider(),
                         Row(
                           children: [
