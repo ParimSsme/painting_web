@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -96,7 +95,7 @@ class PaintingApp extends StatelessWidget {
   }
 }
 
-enum Tool { brush, pencil, fill, eraser }
+enum Tool { brush, pencil, fill, eraser,  text, spray }
 
 class DrawingScreen extends StatefulWidget {
   const DrawingScreen({Key? key}) : super(key: key);
@@ -106,25 +105,34 @@ class DrawingScreen extends StatefulWidget {
 }
 
 class _DrawingScreenState extends State<DrawingScreen> {
-  List<DrawingPoint?> points = [];
+  List<DrawingElement?> points = [];
   Color selectedColor = Colors.black;
   double strokeWidth = 4.0;
   Tool selectedTool = Tool.brush;
   Color backgroundColor = Colors.white;
 
+  void _handleTap(Offset position) {
+    if (selectedTool == Tool.text) {
+      _showTextInputDialog(position);
+    }
+  }
+
   void _handlePanStart(Offset position) {
     setState(() {
       if (selectedTool == Tool.fill) {
         backgroundColor = selectedColor; // Fill the canvas with selected color
+      } else if (selectedTool == Tool.spray) {
+        _addSpray(position);
       } else {
         points.add(
-          DrawingPoint(
+          DrawingElement(
             position: position,
             paint: Paint()
               ..color = selectedColor
               ..isAntiAlias = true
               ..strokeWidth = strokeWidth
               ..strokeCap = StrokeCap.round,
+            type: Tool.pencil,
           ),
         );
       }
@@ -132,10 +140,12 @@ class _DrawingScreenState extends State<DrawingScreen> {
   }
 
   void _handlePanUpdate(Offset position) {
-    if (selectedTool != Tool.fill) {
+    if (selectedTool == Tool.spray) {
+      _addSpray(position);
+    } else if (selectedTool != Tool.fill) {
       setState(() {
         points.add(
-          DrawingPoint(
+          DrawingElement(
             position: position,
             paint: Paint()
                ..color = selectedTool == Tool.eraser
@@ -144,6 +154,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
               ..isAntiAlias = true
               ..strokeWidth = strokeWidth
               ..strokeCap = StrokeCap.round,
+            type: Tool.fill,
           ),
         );
       });
@@ -151,9 +162,73 @@ class _DrawingScreenState extends State<DrawingScreen> {
   }
 
   void _handlePanEnd() {
+    if (selectedTool != Tool.spray) {
+      setState(() {
+        points.add(null); // Add null to separate strokes
+      });
+    }
+  }
+
+  void _addSpray(Offset position) {
+    final random = Random();
+    const int sprayParticleCount = 30;
+    const double sprayRadius = 20.0;
+
     setState(() {
-      points.add(null); // Add null to separate strokes
+      for (int i = 0; i < sprayParticleCount; i++) {
+        final angle = random.nextDouble() * 2 * pi;
+        final distance = random.nextDouble() * sprayRadius;
+        final offset = Offset(
+          position.dx + cos(angle) * distance,
+          position.dy + sin(angle) * distance,
+        );
+        points.add(
+          DrawingElement(
+            position: offset,
+            paint: Paint()
+              ..color = selectedColor
+              ..isAntiAlias = true
+              ..strokeWidth = 2.0
+              ..strokeCap = StrokeCap.round,
+            type: Tool.pencil,
+          ),
+        );
+      }
     });
+  }
+
+  void _showTextInputDialog(Offset position) {
+    TextEditingController textController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Enter Text'),
+          content: TextField(
+            controller: textController,
+            decoration: const InputDecoration(hintText: "Enter your text here"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  points.add(
+                    DrawingElement(
+                      position: position,
+                      text: textController.text,
+                      color: selectedColor,
+                      type: Tool.text,
+                    ),
+                  );
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -255,6 +330,12 @@ class _DrawingScreenState extends State<DrawingScreen> {
                             _buildToolButton(Tool.fill, 'fill'),
                           ],
                         ),
+                        Row(
+                          children: [
+                            _buildToolButton(Tool.text, 'font'),
+                            _buildToolButton(Tool.spray, 'spray'),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -320,15 +401,24 @@ class _DrawingScreenState extends State<DrawingScreen> {
   }
 }
 
-class DrawingPoint {
+class DrawingElement {
   final Offset position;
-  final Paint paint;
+  final Paint? paint;
+  final String? text;
+  final Color? color;
+  final Tool type;
 
-  DrawingPoint({required this.position, required this.paint});
+  DrawingElement({
+    required this.position,
+    this.paint,
+    this.text,
+    this.color,
+    required this.type,
+  });
 }
 
 class DrawingPainter extends CustomPainter {
-  final List<DrawingPoint?> points;
+  final List<DrawingElement?> points;
   final Color backgroundColor;
 
   DrawingPainter({required this.points, required this.backgroundColor});
@@ -339,12 +429,15 @@ class DrawingPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, backgroundPaint);
 
     for (int i = 0; i < points.length - 1; i++) {
+
+      if (points[i] == null) continue;
+
       if (points[i] != null && points[i + 1] != null) {
         canvas.drawLine(
-            points[i]!.position, points[i + 1]!.position, points[i]!.paint);
+            points[i]!.position, points[i + 1]!.position, points[i]!.paint!);
       } else if (points[i] != null && points[i + 1] == null) {
-        canvas.drawCircle(points[i]!.position, points[i]!.paint.strokeWidth / 2,
-            points[i]!.paint);
+        canvas.drawCircle(points[i]!.position, (points[i]!.paint?.strokeWidth ?? 4) / 2,
+            points[i]!.paint!);
       }
     }
   }
