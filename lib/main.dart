@@ -375,6 +375,27 @@ class _DrawingScreenState extends State<DrawingScreen> {
                             _buildToolButton(Tool.spray, 'spray'),
                           ],
                         ),
+
+                        Text('Shapes'),
+                        Divider(),
+                        Row(
+                          children: [
+                            _buildToolButton(Tool.square, 'square'),
+                            _buildToolButton(Tool.circle, 'circle'),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            _buildToolButton(Tool.triangle, 'triangle'),
+                            _buildToolButton(Tool.line, 'line'),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            _buildToolButton(Tool.star, 'star'),
+                            _buildToolButton(Tool.arrow, 'arrow'),
+                          ],
+                        ),
                       ],
                     ),
                   ),
