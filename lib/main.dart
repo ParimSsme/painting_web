@@ -109,7 +109,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
   Offset? startPosition;
   Color selectedColor = Colors.black;
   double strokeWidth = 4.0;
-  Tool selectedTool = Tool.brush;
+  Tool selectedTool = Tool.pencil;
   Color backgroundColor = Colors.white;
 
   void _handleTap(Offset position) {
@@ -567,7 +567,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
       style: ElevatedButton.styleFrom(
         shape: CircleBorder(),
         padding: EdgeInsets.all(10),
-        backgroundColor: selectedTool == tool ? Colors.white : Colors.white70,
+        backgroundColor: selectedTool == tool ? Colors.white : Colors.white38,
       ),
       child: SvgPicture.asset('assets/$icon.svg'),
     );
