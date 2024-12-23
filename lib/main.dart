@@ -426,9 +426,10 @@ class _DrawingScreenState extends State<DrawingScreen> {
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                  shape: CircleBorder(),
-                                  padding: EdgeInsets.all(10),
-                                  backgroundColor: Color(0x33000000)),
+                                shape: CircleBorder(),
+                                padding: EdgeInsets.all(20),
+                                backgroundColor: Colors.white38,
+                              ),
                               child: const Icon(Icons.add, color: Colors.white),
                             )
                           ],
@@ -527,10 +528,8 @@ class _DrawingScreenState extends State<DrawingScreen> {
                           child: TextButton(
                             child: const Text(
                               'Clear All',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18
-                              ),
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 18),
                             ),
                             onPressed: () {
                               setState(() {
