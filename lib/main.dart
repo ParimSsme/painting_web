@@ -99,7 +99,6 @@ class DrawingScreen extends StatefulWidget {
 }
 
 class _DrawingScreenState extends State<DrawingScreen> {
-
   final titleStyle = TextStyle(
     color: Colors.white,
     fontSize: 18,
@@ -374,21 +373,6 @@ class _DrawingScreenState extends State<DrawingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: const Text('Drawing App'),
-        backgroundColor: Colors.blueAccent,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                elements.clear();
-                backgroundColor = Colors.white;
-              });
-            },
-          ),
-        ],
-      ),
       body: Row(
         children: [
           SizedBox(
@@ -458,10 +442,14 @@ class _DrawingScreenState extends State<DrawingScreen> {
                     decoration: BoxDecoration(color: Color(0xe62c2f48)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 10,
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top: 15, left: 5),
-                          child: Text('Tools', style: titleStyle,),
+                          child: Text(
+                            'Tools',
+                            style: titleStyle,
+                          ),
                         ),
                         Divider(),
                         Row(
@@ -484,7 +472,10 @@ class _DrawingScreenState extends State<DrawingScreen> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 15, left: 5),
-                          child: Text('Brushes', style: titleStyle,),
+                          child: Text(
+                            'Brushes',
+                            style: titleStyle,
+                          ),
                         ),
                         Row(
                           children: [
@@ -506,7 +497,10 @@ class _DrawingScreenState extends State<DrawingScreen> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 15, left: 5),
-                          child: Text('Shapes', style: titleStyle,),
+                          child: Text(
+                            'Shapes',
+                            style: titleStyle,
+                          ),
                         ),
                         Divider(),
                         Row(
@@ -526,6 +520,25 @@ class _DrawingScreenState extends State<DrawingScreen> {
                             _buildToolButton(Tool.star, 'star'),
                             _buildToolButton(Tool.arrow, 'arrow'),
                           ],
+                        ),
+                        Spacer(),
+                        Align(
+                          alignment: Alignment.center,
+                          child: TextButton(
+                            child: const Text(
+                              'Clear All',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                elements.clear();
+                                backgroundColor = Colors.white;
+                              });
+                            },
+                          ),
                         ),
                       ],
                     ),
