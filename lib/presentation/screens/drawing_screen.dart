@@ -199,12 +199,12 @@ class DrawingScreen extends StatelessWidget {
         onPressed: () => controller.selectTool(tool),
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(20),
           backgroundColor: controller.selectedTool.value == tool
               ? Colors.white
               : Colors.white38,
         ),
-        child: SvgPicture.asset('assets/$icon.svg', width: 24, height: 24),
+        child: SvgPicture.asset('assets/$icon.svg'),
       ),
     );
   }
