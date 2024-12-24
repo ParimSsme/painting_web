@@ -2,8 +2,7 @@
 
 A huge thanks to the designer for the beautiful design! You can view the design in Figma here:
 
-[I'm an inline-style link](https://www.google.com)
-[![View Figma Design](https://www.figma.com/design/xWR02rHuZjMl5QbaXNFgdv/paint-ui-(Community)?node-id=27-2)
+[View Figma Design](https://www.figma.com/design/xWR02rHuZjMl5QbaXNFgdv/paint-ui-(Community)?node-id=27-2)
 
 This design was found publicly, and I appreciate the work that went into it. Thank you to the creator for sharing it!
 
