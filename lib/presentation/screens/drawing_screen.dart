@@ -53,6 +53,7 @@ class DrawingScreen extends StatelessWidget {
       Container(
         decoration:
         BoxDecoration(color: Colors.deepPurple.shade200),
+        padding: const EdgeInsets.only(top: 50.0),
         alignment: Alignment.topLeft,
         child: SizedBox(
           width: 70,
