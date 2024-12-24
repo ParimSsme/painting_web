@@ -22,6 +22,7 @@ class DrawingScreen extends StatelessWidget {
     return GetX<DrawingController>(
       builder: (_) {
         return Scaffold(
+          resizeToAvoidBottomInset: true,
           backgroundColor: controller.backgroundColor.value,
           body: Row(
             children: [
@@ -237,13 +238,15 @@ class DrawingScreen extends StatelessWidget {
                   onPanUpdate: (details) =>
                       controller.handlePanUpdate(details.localPosition),
                   onPanEnd: (details) => controller.handlePanEnd(),
-        child: Obx(
-              () => CustomPaint(
-            painter: DrawingPainter(
-              elements: controller.elements.value,
-              backgroundColor: controller.backgroundColor.value,
+        child: ClipRRect(
+          child: Obx(
+                () => CustomPaint(
+              painter: DrawingPainter(
+                elements: controller.elements.value,
+                backgroundColor: controller.backgroundColor.value,
+              ),
+              size: Size.infinite,
             ),
-            size: Size.infinite,
           ),
         ),
       ),
