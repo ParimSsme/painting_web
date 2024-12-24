@@ -6,6 +6,5 @@ A huge thanks to the designer for the beautiful design! You can view the design 
 
 This design was found publicly, and I appreciate the work that went into it. Thank you to the creator for sharing it!
 
-App Screens
 # App Preview
 ![](https://github.com/ParimSsme/painting_web/blob/main/app_screenshot.png)
